@@ -722,7 +722,7 @@
         const { useState, useEffect } = React;
 
         // Configuration - Change this to your API URL
-        const API_BASE_URL = 'http://localhost:5000/api'; // Update with your backend URL
+        const API_BASE_URL = 'https://agritech-backend-1-ujzg.onrender.com/api'; // Update with your backend URL
 
         // API Service
         const api = {
@@ -1165,7 +1165,7 @@
                                     />
                                 </div>
                                   <div className="form-group">
-                                    <label className="form-label">Department</label>
+                                    <label className="form-label">Designation</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -1278,6 +1278,146 @@
                                         <div className="detail-label">IFSC Code</div>
                                         <div className="detail-value">{employee.IFSCCode}</div>
                                     </div>
+                                </div>
+                            )}
+                                                        {employee.accountNumber && (
+                                <div style={{marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
+                                    <div className="detail-item">
+                                        <div className="detail-label">Account Number</div>
+                                        <div className="detail-value">{employee.accountNumber}</div>
+                                    </div>
+                                    <div className="detail-item">
+                                        <div className="detail-label">IFSC Code</div>
+                                        <div className="detail-value">{employee.IFSCCode}</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {employee.documents && (
+                                <div style={{marginTop: '24px'}}>
+                                    <h3 style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', color: '#1a202c'}}>
+                                        📄 Uploaded Documents
+                                    </h3>
+                                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px'}}>
+                                        {employee.documents.idProof && (
+                                            <div className="detail-item" style={{textAlign: 'center'}}>
+                                                <div className="detail-label">ID Proof</div>
+                                                <a 
+                                                    href={employee.documents.idProof} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 16px',
+                                                        background: '#667eea',
+                                                        color: 'white',
+                                                        textDecoration: 'none',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        marginTop: '8px',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#5568d3'}
+                                                    onMouseOut={(e) => e.target.style.background = '#667eea'}
+                                                >
+                                                    👁️ View
+                                                </a>
+                                            </div>
+                                        )}
+                                        {employee.documents.addressProof && (
+                                            <div className="detail-item" style={{textAlign: 'center'}}>
+                                                <div className="detail-label">Address Proof</div>
+                                                <a 
+                                                    href={employee.documents.addressProof} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 16px',
+                                                        background: '#667eea',
+                                                        color: 'white',
+                                                        textDecoration: 'none',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        marginTop: '8px',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#5568d3'}
+                                                    onMouseOut={(e) => e.target.style.background = '#667eea'}
+                                                >
+                                                    👁️ View
+                                                </a>
+                                            </div>
+                                        )}
+                                        {employee.documents.employmentLetter && (
+                                            <div className="detail-item" style={{textAlign: 'center'}}>
+                                                <div className="detail-label">Employment Letter</div>
+                                                <a 
+                                                    href={employee.documents.employmentLetter} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 16px',
+                                                        background: '#667eea',
+                                                        color: 'white',
+                                                        textDecoration: 'none',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        marginTop: '8px',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#5568d3'}
+                                                    onMouseOut={(e) => e.target.style.background = '#667eea'}
+                                                >
+                                                    👁️ View
+                                                </a>
+                                            </div>
+                                        )}
+                                        {employee.documents.qualificationCertificate && (
+                                            <div className="detail-item" style={{textAlign: 'center'}}>
+                                                <div className="detail-label">Qualification Certificate</div>
+                                                <a 
+                                                    href={employee.documents.qualificationCertificate} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 16px',
+                                                        background: '#667eea',
+                                                        color: 'white',
+                                                        textDecoration: 'none',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        marginTop: '8px',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#5568d3'}
+                                                    onMouseOut={(e) => e.target.style.background = '#667eea'}
+                                                >
+                                                    👁️ View
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {!employee.documents.idProof && !employee.documents.addressProof && 
+                                     !employee.documents.employmentLetter && !employee.documents.qualificationCertificate && (
+                                        <div style={{textAlign: 'center', padding: '20px', color: '#718096'}}>
+                                            No documents uploaded yet
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
