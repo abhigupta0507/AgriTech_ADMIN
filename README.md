@@ -1,9 +1,20 @@
-# AgriTech_ADMIN
+# AgriTech Admin
 
+React + Vite admin portal for managing employee verification flows.
 
-1.install live server extension from vs code
+## Setup
 
-2. click on go live from vs code
+1. Install dependencies:
+   - `npm install`
+2. Start development server:
+   - `npm run dev`
+3. Build for production:
+   - `npm run build`
 
-3. First log out (if showing 0 employees)
-4. enter the credentials
+## Project Structure
+
+- `src/App.jsx`: app shell and auth/session flow
+- `src/pages`: top-level pages (`LoginPage`, `DashboardPage`, `EmployeesPage`)
+- `src/components`: reusable UI (`Sidebar`, modal components)
+- `src/services/api.js`: backend API calls
+- `src/styles.css`: shared styling
