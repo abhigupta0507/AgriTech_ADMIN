@@ -25,7 +25,7 @@ export default function ReportsPage({ token }) {
         api.getReportStats(token),
       ]);
 
-      console.log(reportsData.reports);
+      //console.log(reportsData.reports);
       setReports(reportsData.reports);
       setPagination(reportsData.pagination);
       setStats(statsData.stats);

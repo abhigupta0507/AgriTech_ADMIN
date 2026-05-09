@@ -26,6 +26,13 @@ export default function Sidebar({
           Employees
         </div>
         <div
+          className={`nav-item ${currentPage === "quizzes" ? "active" : ""}`}
+          onClick={() => setCurrentPage("quizzes")}
+        >
+          <span className="nav-icon">📝</span>
+          Quizzes
+        </div>
+        <div
           className={`nav-item ${currentPage === "reports" ? "active" : ""}`}
           onClick={() => setCurrentPage("reports")}
         >

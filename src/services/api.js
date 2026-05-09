@@ -25,6 +25,7 @@ export const api = {
   },
 
   getStats: async (token) => {
+    //console.log(API_BASE_URL);
     const res = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -32,6 +33,7 @@ export const api = {
   },
 
   getEmployees: async (token, params = {}) => {
+    // console.log(API_BASE_URL);
     const query = new URLSearchParams(params).toString();
     const url = query
       ? `${API_BASE_URL}/admin/employees?${query}`
@@ -174,5 +176,69 @@ export const api = {
       },
     );
     return parseResponse(res, "Failed to fetch user reports");
+  },
+
+  // --- QUIZ MANAGEMENT ---
+  getQuizzes: async (token, params = {}) => {
+    //console.log(API_BASE_URL);
+    const query = new URLSearchParams(params).toString();
+    const url = query
+      ? `${API_BASE_URL}/admin/quizzes?${query}`
+      : `${API_BASE_URL}/admin/quizzes`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return parseResponse(res, "Failed to fetch quizzes");
+  },
+
+  getQuiz: async (token, id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/quizzes/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return parseResponse(res, "Failed to fetch quiz");
+  },
+
+  createQuiz: async (token, data) => {
+    const res = await fetch(`${API_BASE_URL}/admin/quizzes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return parseResponse(res, "Failed to create quiz");
+  },
+
+  updateQuiz: async (token, id, data) => {
+    const res = await fetch(`${API_BASE_URL}/admin/quizzes/${id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    return parseResponse(res, "Failed to update quiz");
+  },
+
+  deleteQuiz: async (token, id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/quizzes/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return parseResponse(res, "Failed to delete quiz");
+  },
+
+  translateText: async (token, text, targetLang) => {
+    const res = await fetch(`${API_BASE_URL}/admin/quizzes/translate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text, targetLang }),
+    });
+    return parseResponse(res, "Failed to translate text");
   },
 };

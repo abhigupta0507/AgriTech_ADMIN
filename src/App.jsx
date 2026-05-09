@@ -3,6 +3,7 @@ import Sidebar from "./components/layout/Sidebar";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import EmployeesPage from "./pages/EmployeesPage";
+import QuizzesPage from "./pages/QuizzesPage";
 import ReportsPage from "./pages/ReportsPage";
 import ReportDetailsPage from "./pages/ReportDetailsPage";
 import WarningsPage from "./pages/WarningsPage";
@@ -71,6 +72,7 @@ export default function App() {
       <main className="main-content">
         {currentPage === "dashboard" && <DashboardPage token={token} />}
         {currentPage === "employees" && <EmployeesPage token={token} />}
+        {currentPage === "quizzes" && <QuizzesPage token={token} />}
         {currentPage === "reports" &&
           (selectedReportId ? (
             <ReportDetailsPage
