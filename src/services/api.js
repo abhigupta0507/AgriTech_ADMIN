@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.BACKEND_URL;
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 async function parseResponse(res, fallbackMessage) {
   if (res.ok) return res.json();
