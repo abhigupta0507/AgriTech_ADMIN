@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://agritech-backend-1-ujzg.onrender.com/api";
+const API_BASE_URL = import.meta.env.BACKEND_URL;
 
 async function parseResponse(res, fallbackMessage) {
   if (res.ok) return res.json();
