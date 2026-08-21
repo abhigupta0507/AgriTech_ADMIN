@@ -46,6 +46,13 @@ export default function Sidebar({
           <span className="nav-icon">⚠️</span>
           Warnings
         </div>
+        <div
+          className={`nav-item ${currentPage === "support" ? "active" : ""}`}
+          onClick={() => setCurrentPage("support")}
+        >
+          <span className="nav-icon">💬</span>
+          Support
+        </div>
       </nav>
 
       <div className="sidebar-footer">
