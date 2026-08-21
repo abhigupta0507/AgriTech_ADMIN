@@ -281,7 +281,7 @@ export const api = {
     const res = await fetch(
       `${API_BASE_URL}/admin/support/tickets/${ticketId}/status`,
       {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
