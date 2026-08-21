@@ -1,5 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+// VITE_BACKEND_URL includes the /api suffix (used throughout this file), but
+// Socket.IO connects to the server origin itself, not an /api path segment.
+export const SOCKET_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, "");
+
 async function parseResponse(res, fallbackMessage) {
   if (res.ok) return res.json();
 
@@ -240,5 +244,51 @@ export const api = {
       body: JSON.stringify({ text, targetLang }),
     });
     return parseResponse(res, "Failed to translate text");
+  },
+
+  // --- SUPPORT TICKETS ---
+  getSupportTickets: async (token, params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    const url = query
+      ? `${API_BASE_URL}/admin/support/tickets?${query}`
+      : `${API_BASE_URL}/admin/support/tickets`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return parseResponse(res, "Failed to fetch support tickets");
+  },
+
+  getSupportTicketDetail: async (token, ticketId) => {
+    const res = await fetch(`${API_BASE_URL}/support/ticket/${ticketId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return parseResponse(res, "Failed to fetch ticket");
+  },
+
+  sendSupportMessage: async (token, ticketId, text) => {
+    const res = await fetch(`${API_BASE_URL}/support/ticket/${ticketId}/message`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+    return parseResponse(res, "Failed to send message");
+  },
+
+  updateSupportTicketStatus: async (token, ticketId, status) => {
+    const res = await fetch(
+      `${API_BASE_URL}/admin/support/tickets/${ticketId}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      },
+    );
+    return parseResponse(res, "Failed to update ticket status");
   },
 };
