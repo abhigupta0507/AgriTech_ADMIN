@@ -311,6 +311,37 @@ function QuizModal({ token, quiz, onClose }) {
       return;
     }
 
+    // Farmers can use the app in English, Hindi, or Bhojpuri, so every
+    // farmer-facing field must be filled in all three languages (the backend
+    // rejects the quiz otherwise). Blank strings don't count.
+    const filled = (s) => typeof s === "string" && s.trim().length > 0;
+    const missing = [];
+    for (const lang of ["en", "hi", "bho"]) {
+      if (!filled(formData.title[lang])) missing.push(`Title (${lang})`);
+    }
+    formData.questions.forEach((q, i) => {
+      for (const lang of ["en", "hi", "bho"]) {
+        if (!filled(q.question?.[lang])) {
+          missing.push(`Question ${i + 1} text (${lang})`);
+        }
+        const opts = q.options?.[lang] || [];
+        if (
+          opts.length !== (q.options?.en?.length || 0) ||
+          !opts.every(filled)
+        ) {
+          missing.push(`Question ${i + 1} options (${lang})`);
+        }
+      }
+    });
+    if (missing.length > 0) {
+      alert(
+        `Translations are required in all languages before saving.\n\nMissing or blank:\n- ${missing.join(
+          "\n- ",
+        )}\n\nTip: use the "Generate" buttons to auto-translate from English, then review.`,
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       if (quiz) {
