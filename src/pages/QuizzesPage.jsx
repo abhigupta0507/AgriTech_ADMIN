@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
+import {
+  LANGUAGES,
+  BASE_LANG,
+  LANG_CODES,
+  emptyI18nString,
+  emptyI18nOptions,
+} from "../constants/languages";
+
+const EXTRA_LANGS = LANGUAGES.filter((l) => l.code !== BASE_LANG);
 
 export default function QuizzesPage({ token }) {
   const [quizzes, setQuizzes] = useState([]);
@@ -155,23 +164,17 @@ export default function QuizzesPage({ token }) {
               )}
 
               <div style={styles.translationStatus}>
-                <span style={styles.langBadge}>EN ✓</span>
-                <span
-                  style={{
-                    ...styles.langBadge,
-                    opacity: quiz.title.hi ? 1 : 0.4,
-                  }}
-                >
-                  HI {quiz.title.hi ? "✓" : "✗"}
-                </span>
-                <span
-                  style={{
-                    ...styles.langBadge,
-                    opacity: quiz.title.bho ? 1 : 0.4,
-                  }}
-                >
-                  BHO {quiz.title.bho ? "✓" : "✗"}
-                </span>
+                {LANGUAGES.map(({ code }) => (
+                  <span
+                    key={code}
+                    style={{
+                      ...styles.langBadge,
+                      opacity: quiz.title[code] ? 1 : 0.4,
+                    }}
+                  >
+                    {code.toUpperCase()} {quiz.title[code] ? "✓" : "✗"}
+                  </span>
+                ))}
               </div>
             </div>
           ))
@@ -193,8 +196,8 @@ function QuizModal({ token, quiz, onClose }) {
   const [formData, setFormData] = useState(
     quiz || {
       order: "",
-      title: { en: "", hi: "", bho: "" },
-      description: { en: "", hi: "", bho: "" },
+      title: emptyI18nString(),
+      description: emptyI18nString(),
       category: "pest_disease",
       passingScore: 60,
       isActive: true,
@@ -267,14 +270,10 @@ function QuizModal({ token, quiz, onClose }) {
       questions: [
         ...formData.questions,
         {
-          question: { en: "", hi: "", bho: "" },
-          options: {
-            en: ["", "", "", ""],
-            hi: ["", "", "", ""],
-            bho: ["", "", "", ""],
-          },
+          question: emptyI18nString(),
+          options: emptyI18nOptions(),
           correctIndex: 0,
-          explanation: { en: "", hi: "", bho: "" },
+          explanation: emptyI18nString(),
         },
       ],
     });
@@ -311,22 +310,22 @@ function QuizModal({ token, quiz, onClose }) {
       return;
     }
 
-    // Farmers can use the app in English, Hindi, or Bhojpuri, so every
+    // Farmers can use the app in any supported language, so every
     // farmer-facing field must be filled in all three languages (the backend
     // rejects the quiz otherwise). Blank strings don't count.
     const filled = (s) => typeof s === "string" && s.trim().length > 0;
     const missing = [];
-    for (const lang of ["en", "hi", "bho"]) {
+    for (const lang of LANG_CODES) {
       if (!filled(formData.title[lang])) missing.push(`Title (${lang})`);
     }
     formData.questions.forEach((q, i) => {
-      for (const lang of ["en", "hi", "bho"]) {
+      for (const lang of LANG_CODES) {
         if (!filled(q.question?.[lang])) {
           missing.push(`Question ${i + 1} text (${lang})`);
         }
         const opts = q.options?.[lang] || [];
         if (
-          opts.length !== (q.options?.en?.length || 0) ||
+          opts.length !== (q.options?.[BASE_LANG]?.length || 0) ||
           !opts.every(filled)
         ) {
           missing.push(`Question ${i + 1} options (${lang})`);
@@ -454,163 +453,87 @@ function QuizModal({ token, quiz, onClose }) {
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Title *</h3>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>English</label>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.title.en}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      title: { ...formData.title, en: e.target.value },
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <div style={styles.labelRow}>
-                  <label style={styles.label}>Hindi</label>
-                  <button
-                    type="button"
-                    style={styles.btnSmall}
-                    onClick={() =>
-                      handleTranslate("title", formData.title.en, "hi")
+              {LANGUAGES.map(({ code, label }) => (
+                <div key={code} style={styles.formGroup}>
+                  {code === BASE_LANG ? (
+                    <label style={styles.label}>{label}</label>
+                  ) : (
+                    <div style={styles.labelRow}>
+                      <label style={styles.label}>{label}</label>
+                      <button
+                        type="button"
+                        style={styles.btnSmall}
+                        onClick={() =>
+                          handleTranslate(
+                            "title",
+                            formData.title[BASE_LANG],
+                            code,
+                          )
+                        }
+                        disabled={translating}
+                      >
+                        {translating ? "..." : "Generate"}
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    style={styles.input}
+                    value={formData.title[code]}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        title: { ...formData.title, [code]: e.target.value },
+                      })
                     }
-                    disabled={translating}
-                  >
-                    {translating ? "..." : "Generate"}
-                  </button>
+                    required={code === BASE_LANG}
+                  />
                 </div>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.title.hi}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      title: { ...formData.title, hi: e.target.value },
-                    })
-                  }
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <div style={styles.labelRow}>
-                  <label style={styles.label}>Bhojpuri</label>
-                  <button
-                    type="button"
-                    style={styles.btnSmall}
-                    onClick={() =>
-                      handleTranslate("title", formData.title.en, "bho")
-                    }
-                    disabled={translating}
-                  >
-                    {translating ? "..." : "Generate"}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.title.bho}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      title: { ...formData.title, bho: e.target.value },
-                    })
-                  }
-                />
-              </div>
+              ))}
             </div>
 
             {/* Description */}
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Description (Optional)</h3>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>English</label>
-                <textarea
-                  style={{ ...styles.input, minHeight: "60px" }}
-                  value={formData.description.en}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description: {
-                        ...formData.description,
-                        en: e.target.value,
-                      },
-                    })
-                  }
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <div style={styles.labelRow}>
-                  <label style={styles.label}>Hindi</label>
-                  <button
-                    type="button"
-                    style={styles.btnSmall}
-                    onClick={() =>
-                      handleTranslate(
-                        "description",
-                        formData.description.en,
-                        "hi",
-                      )
+              {LANGUAGES.map(({ code, label }) => (
+                <div key={code} style={styles.formGroup}>
+                  {code === BASE_LANG ? (
+                    <label style={styles.label}>{label}</label>
+                  ) : (
+                    <div style={styles.labelRow}>
+                      <label style={styles.label}>{label}</label>
+                      <button
+                        type="button"
+                        style={styles.btnSmall}
+                        onClick={() =>
+                          handleTranslate(
+                            "description",
+                            formData.description[BASE_LANG],
+                            code,
+                          )
+                        }
+                        disabled={translating}
+                      >
+                        {translating ? "..." : "Generate"}
+                      </button>
+                    </div>
+                  )}
+                  <textarea
+                    style={{ ...styles.input, minHeight: "60px" }}
+                    value={formData.description[code]}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        description: {
+                          ...formData.description,
+                          [code]: e.target.value,
+                        },
+                      })
                     }
-                    disabled={translating}
-                  >
-                    {translating ? "..." : "Generate"}
-                  </button>
+                  />
                 </div>
-                <textarea
-                  style={{ ...styles.input, minHeight: "60px" }}
-                  value={formData.description.hi}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description: {
-                        ...formData.description,
-                        hi: e.target.value,
-                      },
-                    })
-                  }
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <div style={styles.labelRow}>
-                  <label style={styles.label}>Bhojpuri</label>
-                  <button
-                    type="button"
-                    style={styles.btnSmall}
-                    onClick={() =>
-                      handleTranslate(
-                        "description",
-                        formData.description.en,
-                        "bho",
-                      )
-                    }
-                    disabled={translating}
-                  >
-                    {translating ? "..." : "Generate"}
-                  </button>
-                </div>
-                <textarea
-                  style={{ ...styles.input, minHeight: "60px" }}
-                  value={formData.description.bho}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description: {
-                        ...formData.description,
-                        bho: e.target.value,
-                      },
-                    })
-                  }
-                />
-              </div>
+              ))}
             </div>
 
             {/* Questions */}
@@ -672,12 +595,10 @@ function QuestionEditor({
   translating,
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const hiOptions = Array.isArray(question.options?.hi)
-    ? question.options.hi
-    : ["", "", "", ""];
-  const bhoOptions = Array.isArray(question.options?.bho)
-    ? question.options.bho
-    : ["", "", "", ""];
+  const optionsFor = (code) =>
+    Array.isArray(question.options?.[code])
+      ? question.options[code]
+      : ["", "", "", ""];
 
   return (
     <div style={styles.questionCard}>
@@ -706,85 +627,49 @@ function QuestionEditor({
       {!collapsed && (
         <div style={styles.questionBody}>
           {/* Question Text */}
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Question Text (English) *</label>
-            <textarea
-              style={{ ...styles.input, minHeight: "60px" }}
-              value={question.question.en}
-              onChange={(e) =>
-                onQuestionChange(index, "question", {
-                  ...question.question,
-                  en: e.target.value,
-                })
-              }
-              required
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Question Text (Hindi)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={() =>
-                  onTranslate(
-                    `questions.${index}.question`,
-                    question.question.en,
-                    "hi",
-                  )
+          {LANGUAGES.map(({ code, label }) => (
+            <div key={code} style={styles.formGroup}>
+              {code === BASE_LANG ? (
+                <label style={styles.label}>Question Text ({label}) *</label>
+              ) : (
+                <div style={styles.labelRow}>
+                  <label style={styles.label}>Question Text ({label})</label>
+                  <button
+                    type="button"
+                    style={styles.btnSmall}
+                    onClick={() =>
+                      onTranslate(
+                        `questions.${index}.question`,
+                        question.question[BASE_LANG],
+                        code,
+                      )
+                    }
+                    disabled={translating}
+                  >
+                    {translating ? "..." : "Generate"}
+                  </button>
+                </div>
+              )}
+              <textarea
+                style={{ ...styles.input, minHeight: "60px" }}
+                value={question.question[code]}
+                onChange={(e) =>
+                  onQuestionChange(index, "question", {
+                    ...question.question,
+                    [code]: e.target.value,
+                  })
                 }
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate"}
-              </button>
+                required={code === BASE_LANG}
+              />
             </div>
-            <textarea
-              style={{ ...styles.input, minHeight: "60px" }}
-              value={question.question.hi}
-              onChange={(e) =>
-                onQuestionChange(index, "question", {
-                  ...question.question,
-                  hi: e.target.value,
-                })
-              }
-            />
-          </div>
+          ))}
 
-          <div style={styles.formGroup}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Question Text (Bhojpuri)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={() =>
-                  onTranslate(
-                    `questions.${index}.question`,
-                    question.question.en,
-                    "bho",
-                  )
-                }
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate"}
-              </button>
-            </div>
-            <textarea
-              style={{ ...styles.input, minHeight: "60px" }}
-              value={question.question.bho}
-              onChange={(e) =>
-                onQuestionChange(index, "question", {
-                  ...question.question,
-                  bho: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* Options */}
+          {/* Options — base language carries the correct-answer radios */}
           <div style={styles.optionsSection}>
-            <label style={styles.label}>Options (English) *</label>
-            {question.options.en.map((opt, optIndex) => (
+            <label style={styles.label}>
+              Options ({LANGUAGES.find((l) => l.code === BASE_LANG).label}) *
+            </label>
+            {question.options[BASE_LANG].map((opt, optIndex) => (
               <div key={optIndex} style={styles.optionRow}>
                 <input
                   type="radio"
@@ -800,7 +685,7 @@ function QuestionEditor({
                   style={styles.input}
                   value={opt}
                   onChange={(e) =>
-                    onOptionChange(index, optIndex, "en", e.target.value)
+                    onOptionChange(index, optIndex, BASE_LANG, e.target.value)
                   }
                   placeholder={`Option ${optIndex + 1}`}
                   required
@@ -809,152 +694,82 @@ function QuestionEditor({
             ))}
           </div>
 
-          <div style={styles.optionsSection}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Options (Hindi)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={async () => {
-                  for (let i = 0; i < question.options.en.length; i++) {
-                    if (question.options.en[i]) {
-                      await onTranslate(
-                        `questions.${index}.options.hi.${i}`,
-                        question.options.en[i],
-                        "hi",
-                      );
+          {EXTRA_LANGS.map(({ code, label }) => (
+            <div key={code} style={styles.optionsSection}>
+              <div style={styles.labelRow}>
+                <label style={styles.label}>Options ({label})</label>
+                <button
+                  type="button"
+                  style={styles.btnSmall}
+                  onClick={async () => {
+                    for (let i = 0; i < question.options[BASE_LANG].length; i++) {
+                      if (question.options[BASE_LANG][i]) {
+                        await onTranslate(
+                          `questions.${index}.options.${code}.${i}`,
+                          question.options[BASE_LANG][i],
+                          code,
+                        );
+                      }
                     }
+                  }}
+                  disabled={translating}
+                >
+                  {translating ? "..." : "Generate All"}
+                </button>
+              </div>
+              {optionsFor(code).map((opt, optIndex) => (
+                <input
+                  key={optIndex}
+                  type="text"
+                  style={{ ...styles.input, marginBottom: "8px" }}
+                  value={opt}
+                  onChange={(e) =>
+                    onOptionChange(index, optIndex, code, e.target.value)
                   }
-                }}
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate All"}
-              </button>
+                  placeholder={`Option ${optIndex + 1} (${label})`}
+                />
+              ))}
             </div>
-            {hiOptions.map((opt, optIndex) => (
-              <input
-                key={optIndex}
-                type="text"
-                style={{ ...styles.input, marginBottom: "8px" }}
-                value={opt}
-                onChange={(e) =>
-                  onOptionChange(index, optIndex, "hi", e.target.value)
-                }
-                placeholder={`Option ${optIndex + 1} (Hindi)`}
-              />
-            ))}
-          </div>
-
-          <div style={styles.optionsSection}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Options (Bhojpuri)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={async () => {
-                  for (let i = 0; i < question.options.en.length; i++) {
-                    if (question.options.en[i]) {
-                      await onTranslate(
-                        `questions.${index}.options.bho.${i}`,
-                        question.options.en[i],
-                        "bho",
-                      );
-                    }
-                  }
-                }}
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate All"}
-              </button>
-            </div>
-            {bhoOptions.map((opt, optIndex) => (
-              <input
-                key={optIndex}
-                type="text"
-                style={{ ...styles.input, marginBottom: "8px" }}
-                value={opt}
-                onChange={(e) =>
-                  onOptionChange(index, optIndex, "bho", e.target.value)
-                }
-                placeholder={`Option ${optIndex + 1} (Bhojpuri)`}
-              />
-            ))}
-          </div>
+          ))}
 
           {/* Explanation */}
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Explanation (English, Optional)</label>
-            <textarea
-              style={{ ...styles.input, minHeight: "50px" }}
-              value={question.explanation.en}
-              onChange={(e) =>
-                onQuestionChange(index, "explanation", {
-                  ...question.explanation,
-                  en: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Explanation (Hindi)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={() =>
-                  onTranslate(
-                    `questions.${index}.explanation`,
-                    question.explanation.en,
-                    "hi",
-                  )
+          {LANGUAGES.map(({ code, label }) => (
+            <div key={code} style={styles.formGroup}>
+              {code === BASE_LANG ? (
+                <label style={styles.label}>
+                  Explanation ({label}, Optional)
+                </label>
+              ) : (
+                <div style={styles.labelRow}>
+                  <label style={styles.label}>Explanation ({label})</label>
+                  <button
+                    type="button"
+                    style={styles.btnSmall}
+                    onClick={() =>
+                      onTranslate(
+                        `questions.${index}.explanation`,
+                        question.explanation[BASE_LANG],
+                        code,
+                      )
+                    }
+                    disabled={translating}
+                  >
+                    {translating ? "..." : "Generate"}
+                  </button>
+                </div>
+              )}
+              <textarea
+                style={{ ...styles.input, minHeight: "50px" }}
+                value={question.explanation[code]}
+                onChange={(e) =>
+                  onQuestionChange(index, "explanation", {
+                    ...question.explanation,
+                    [code]: e.target.value,
+                  })
                 }
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate"}
-              </button>
+              />
             </div>
-            <textarea
-              style={{ ...styles.input, minHeight: "50px" }}
-              value={question.explanation.hi}
-              onChange={(e) =>
-                onQuestionChange(index, "explanation", {
-                  ...question.explanation,
-                  hi: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Explanation (Bhojpuri)</label>
-              <button
-                type="button"
-                style={styles.btnSmall}
-                onClick={() =>
-                  onTranslate(
-                    `questions.${index}.explanation`,
-                    question.explanation.en,
-                    "bho",
-                  )
-                }
-                disabled={translating}
-              >
-                {translating ? "..." : "Generate"}
-              </button>
-            </div>
-            <textarea
-              style={{ ...styles.input, minHeight: "50px" }}
-              value={question.explanation.bho}
-              onChange={(e) =>
-                onQuestionChange(index, "explanation", {
-                  ...question.explanation,
-                  bho: e.target.value,
-                })
-              }
-            />
-          </div>
+          ))}
         </div>
       )}
     </div>
